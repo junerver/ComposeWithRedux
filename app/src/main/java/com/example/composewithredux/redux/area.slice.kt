@@ -11,8 +11,8 @@ import xyz.junerver.redux_kotlin.annotation.RegisterReducer
  * Version: v1.0
  */
 @RegisterReducer(name = "areas")
-val areaReducer = reducerForActionType<List<Area>, Action> { state, action ->
-    when (action) {
+fun areaReducer(state: List<Area>, action: Any): List<Area> {
+    return when (action) {
         is Action.AddArea -> {
             state + action.area
         }
@@ -21,5 +21,6 @@ val areaReducer = reducerForActionType<List<Area>, Action> { state, action ->
                 it.id != action.id
             }
         }
+        else -> state
     }
 }

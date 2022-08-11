@@ -12,8 +12,8 @@ import xyz.junerver.redux_kotlin.annotation.RegisterReducer
  * Version: v1.0
  */
 data class State(
-    val name: String? = null,
-    val areas: List<Area> = emptyList()
+    val name: String?,
+    val areas: List<Area>
 )
 
 sealed interface Action {
@@ -73,11 +73,10 @@ val rootReducer: Reducer<State> = { state: State, action: Any ->
 @RegisterReducer(name = "reducer")
 fun reducer(state: State, action: Any) = State(
     name = nameReducer(state.name, action),
-    areas = areaReducer(state.areas, action)
+    areas = areaReducer(state.areas, action as Action)
 )
 
-val store = createThreadSafeStore(rootReducer, State())
-
+val store = createThreadSafeStore(::reducer , State(null, emptyList()))
 data class Area(
     val id: String,
     val areaName: String,
