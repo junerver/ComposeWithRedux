@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'kotlin-kapt'
+}
+sourceSets {
+    main {
+        //用kotlin就必须要写这个sourceSet
+        kotlin {
+            srcDir 'src/main/kotlin'
+        }
+    }
+}
+// 此处必须是1_8 否则无法使用 com.squareup:kotlinpoet:1.12.0
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    implementation project(':redux-kotlin-annotation')
+    implementation 'com.google.auto.service:auto-service:1.0-rc4'
+    kapt 'com.google.auto.service:auto-service:1.0-rc4' // kotlin 版本
+    implementation 'com.squareup:kotlinpoet:1.12.0'
+}
