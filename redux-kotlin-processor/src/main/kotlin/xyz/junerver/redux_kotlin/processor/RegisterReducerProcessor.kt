@@ -2,6 +2,7 @@ package xyz.junerver.redux_kotlin.processor
 
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import com.squareup.kotlinpoet.metadata.specs.ClassInspector
 import com.squareup.kotlinpoet.metadata.toKmClass
@@ -31,55 +32,26 @@ class RegisterReducerProcessor : AbstractProcessor() {
     }
 
 
-    @OptIn(DelicateKotlinPoetApi::class, KotlinPoetMetadataPreview::class)
+    @OptIn(DelicateKotlinPoetApi::class)
     override fun process(
         annotations: MutableSet<out TypeElement>?,
         roundEnvironment: RoundEnvironment?
     ): Boolean {
-        val messager = processingEnv.messager
-        messager.printMessage(Diagnostic.Kind.NOTE, "start: --------------")
+        // file name
         val fileBuilder = FileSpec.builder("", "ReduxKotlinRoot")
+        // data class
         val classBuilder = TypeSpec.classBuilder("AppState").addModifiers(KModifier.DATA)
         val ctorBuilder = FunSpec.constructorBuilder()
-
         roundEnvironment?.getElementsAnnotatedWith(RegisterReducer::class.java)
             ?.forEach {
-                val annotation = it.getAnnotation(RegisterReducer::class.java) // 获取注解实例
-                val name = annotation.name // 拿到注解中的 参数
-                val simpleName = it.simpleName
+                val annotation = it.getAnnotation(RegisterReducer::class.java)
+                val name = annotation.name
                 if (it.kind == ElementKind.METHOD && it is ExecutableElement) {
-                    //如果是函数，获取函数参数
-                    messager.printMessage(
-                        Diagnostic.Kind.NOTE,
-                        "注解对象是方法: ${(it)}"
-                    )
-                    // 获取函数的第一个参数（state）
                     if (it.parameters.isNotEmpty()) {
-                        val parameter = it.parameters[0]
-                        messager.printMessage(
-                            Diagnostic.Kind.NOTE,
-                            "注解函数的参数: $parameter  / ${parameter is TypeElement } ${parameter is VariableElement }"
-                        )
-                        val ep = parameter.asType().asTypeName()
-//                        val packageName = getPackage(element).qualifiedName.toString()
-//                        val typeMetadata = element.getAnnotation(Metadata::class.java)
-//                        val kmClass = typeMetadata.toImmutableKmClass()
-//                        val className = ClassInspectorUtil.createClassName(kmClass.name)
-
-                        messager.printMessage(
-                            Diagnostic.Kind.NOTE,
-                            "注解函数的参数 Metadata: $ep  "
-                        )
-//                        val typeMetadata = parameter.getAnnotation(Metadata::class.java)
-//                        val kmClass = typeMetadata.toKmClass()
+                        val parameter = it.parameters[0] as VariableElement
                         val parameterType = parameter.asType()
-                        messager.printMessage(
-                            Diagnostic.Kind.NOTE,
-                            "注解函数的参数: $parameter "
-                        )
-                        // 构造函数添加参数
+                        // add first param to data class with custom name
                         ctorBuilder.addParameter(name, parameterType.asTypeName())
-                        // 这段代码会为构造函数增加val
                         classBuilder.addProperty(
                             PropertySpec.builder(name, parameterType.asTypeName())
                                 .initializer(name)
@@ -88,16 +60,33 @@ class RegisterReducerProcessor : AbstractProcessor() {
                     }
                 }
             }
-
         if (!hadRun) {
-
-            // 遍历参数属性完毕
             classBuilder.primaryConstructor(ctorBuilder.build())
             fileBuilder.addType(classBuilder.build())
             fileBuilder.build().writeTo(filer)
             hadRun = true
         }
-        //该方法返回ture表示该注解已经被处理, 后续不会再有其他处理器处理; 返回false表示仍可被其他处理器处理.
         return true
+    }
+}
+
+fun TypeName.javaToKotlinType(): TypeName = when (this) {
+    is ParameterizedTypeName -> {
+        (rawType.javaToKotlinType() as ClassName).parameterizedBy(
+            *typeArguments.map {
+                it.javaToKotlinType()
+            }.toTypedArray()
+        )
+    }
+    is WildcardTypeName -> {
+        if (inTypes.isNotEmpty()) WildcardTypeName.consumerOf(inTypes[0].javaToKotlinType())
+        else WildcardTypeName.producerOf(outTypes[0].javaToKotlinType())
+    }
+
+    else -> {
+        val className = JavaToKotlinClassMap
+            .mapJavaToKotlin(FqName(toString()))?.asSingleFqName()?.asString()
+        if (className == null) this
+        else ClassName.bestGuess(className)
     }
 }

@@ -11,10 +11,7 @@ import xyz.junerver.redux_kotlin.annotation.RegisterReducer
  * Email: junerver@gmail.com
  * Version: v1.0
  */
-data class State(
-    val name: String?,
-    val areas: List<Area>
-)
+
 
 sealed interface Action {
     data class AddArea(val area: Area) : Action
@@ -59,7 +56,6 @@ fun nameReducer(state: String?, action: Any):String? {
    }
 }
 
-
 /**
  * 用于合并各个分割的reducer函数
  */
@@ -70,6 +66,11 @@ val rootReducer: Reducer<State> = { state: State, action: Any ->
     )
 }
 
+data class State(
+    val name: String?,
+    val areas: List<Area>
+)
+
 @RegisterReducer(name = "reducer")
 fun reducer(state: State, action: Any) = State(
     name = nameReducer(state.name, action),
@@ -77,6 +78,8 @@ fun reducer(state: State, action: Any) = State(
 )
 
 val store = createThreadSafeStore(::reducer , State(null, emptyList()))
+
+
 data class Area(
     val id: String,
     val areaName: String,
