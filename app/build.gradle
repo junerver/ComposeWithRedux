@@ -49,7 +49,6 @@ android {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.10'
     implementation project(':compose-redux')
     implementation project(':redux-kotlin-annotation')
     ksp project(':redux-kotlin-processor')
