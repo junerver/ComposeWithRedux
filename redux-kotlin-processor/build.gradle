@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm'
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
 }
 sourceSets {
     main {
@@ -17,11 +18,12 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
     implementation project(':redux-kotlin-annotation')
-    implementation 'com.google.auto.service:auto-service:1.0-rc4'
-    kapt 'com.google.auto.service:auto-service:1.0-rc4' // kotlin 版本
+    implementation 'com.google.auto.service:auto-service-annotations:1.0'
+    ksp 'com.google.auto.service:auto-service:1.0' // kotlin 版本
     implementation 'com.squareup:kotlinpoet:1.12.0'
     // https://mvnrepository.com/artifact/com.squareup/kotlinpoet-metadata
     implementation 'com.squareup:kotlinpoet-metadata:1.12.0'
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.6.21'
+
+    implementation 'com.google.devtools.ksp:symbol-processing-api:1.7.0-1.0.6'
+    ksp("dev.zacsweers.autoservice:auto-service-ksp:0.5.2")
 }

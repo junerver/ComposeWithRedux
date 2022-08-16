@@ -70,23 +70,23 @@ class RegisterReducerProcessor : AbstractProcessor() {
     }
 }
 
-fun TypeName.javaToKotlinType(): TypeName = when (this) {
-    is ParameterizedTypeName -> {
-        (rawType.javaToKotlinType() as ClassName).parameterizedBy(
-            *typeArguments.map {
-                it.javaToKotlinType()
-            }.toTypedArray()
-        )
-    }
-    is WildcardTypeName -> {
-        if (inTypes.isNotEmpty()) WildcardTypeName.consumerOf(inTypes[0].javaToKotlinType())
-        else WildcardTypeName.producerOf(outTypes[0].javaToKotlinType())
-    }
-
-    else -> {
-        val className = JavaToKotlinClassMap
-            .mapJavaToKotlin(FqName(toString()))?.asSingleFqName()?.asString()
-        if (className == null) this
-        else ClassName.bestGuess(className)
-    }
-}
+//fun TypeName.javaToKotlinType(): TypeName = when (this) {
+//    is ParameterizedTypeName -> {
+//        (rawType.javaToKotlinType() as ClassName).parameterizedBy(
+//            *typeArguments.map {
+//                it.javaToKotlinType()
+//            }.toTypedArray()
+//        )
+//    }
+//    is WildcardTypeName -> {
+//        if (inTypes.isNotEmpty()) WildcardTypeName.consumerOf(inTypes[0].javaToKotlinType())
+//        else WildcardTypeName.producerOf(outTypes[0].javaToKotlinType())
+//    }
+//
+//    else -> {
+//        val className = JavaToKotlinClassMap
+//            .mapJavaToKotlin(FqName(toString()))?.asSingleFqName()?.asString()
+//        if (className == null) this
+//        else ClassName.bestGuess(className)
+//    }
+//}

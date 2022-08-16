@@ -1,15 +1,22 @@
 pluginManagement {
     repositories {
-        google()
-        mavenCentral()
+        //central 与 jcenter的聚合仓库
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        //google 仓库
+        maven { url 'https://maven.aliyun.com/repository/google' }
         gradlePluginPortal()
+    }
+    plugins {
+        id 'com.google.devtools.ksp' version '1.7.0-1.0.6' apply false
     }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
-        mavenCentral()
+        //central 与 jcenter的聚合仓库
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        //google 仓库
+        maven { url 'https://maven.aliyun.com/repository/google' }
     }
 }
 rootProject.name = "ComposeWithRedux"
