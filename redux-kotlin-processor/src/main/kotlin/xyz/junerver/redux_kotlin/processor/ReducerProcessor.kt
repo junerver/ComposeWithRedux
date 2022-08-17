@@ -42,6 +42,48 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             .returns(appStateClass)
             .addCode("return %T(\n", appStateClass)
 
+        fun addSliceInfo(
+            ksDeclaration: KSDeclaration,
+            sliceStateName: String,
+            sliceStateType: KSType
+        ) {
+            val sliceReducerFunc =
+                MemberName(ksDeclaration.packageName.asString(), "$ksDeclaration")
+
+            rootReducerBuilder.addCode(
+                "   $sliceStateName = %M(state.$sliceStateName, action),\n",
+                sliceReducerFunc
+            )
+
+            // 构造函数添加参数
+            ctorBuilder.addParameter(sliceStateName, sliceStateType.toTypeName())
+            // 这段代码会为构造函数增加val
+            classBuilder.addProperty(
+                PropertySpec.builder(sliceStateName, sliceStateType.toTypeName())
+                    .initializer(sliceStateName)
+                    .build()
+            )
+        }
+
+        // val a = {a,b -> a+b}  KSPropertyDeclaration
+        symbols.filter { it is KSPropertyDeclaration && it.validate() }
+            .map { it as KSPropertyDeclaration }
+            .forEach {
+                isNeed = true
+                val property = it.annotations.filter { ann ->
+                    ann.shortName.asString() == SliceReducer::class.simpleName
+                }.last().arguments[0]
+                val sliceStateName = property.value.toString()
+                val sliceStateType: KSType = it.type.resolve().arguments[0].type!!.resolve()
+
+                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
+                logger.warn("函数名 ====== $it  ${it is KSFunctionDeclaration}")
+                logger.warn("类型解析 ====== ${it.type.resolve()}")
+                logger.warn("是否函数类型 ====== ${it.type.resolve().isFunctionType}")
+                logger.warn("函数的参数 ====== ${it.type.resolve().arguments[0].type?.resolve()}")
+
+                addSliceInfo(it, sliceStateName, sliceStateType)
+            }
 
         symbols.filter { it is KSFunctionDeclaration && it.validate() }
             .map { it as KSFunctionDeclaration }
@@ -50,6 +92,7 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             }
             .toList()
             .forEach { funcDeclare ->
+                isNeed = true
                 // 拿到被注解目标的注解一个队列
                 // 拿到我们自定义的注解获取到注解的参数，由于只有一个参数直接拿0
                 val property = funcDeclare.annotations.filter { ann ->
@@ -60,27 +103,11 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                 // 从函数中获取参数1，然后获得其类型
                 val sliceStateType: KSType = funcDeclare.parameters[0].type.resolve()
 
-                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
-                logger.warn("函数参数类型 ====== $sliceStateType")
-                logger.warn("函数名 ====== $funcDeclare")
-                logger.warn("函数所在包名 ====== ${funcDeclare.packageName.asString()}")
-                val sliceReducerFunc =
-                    MemberName(funcDeclare.packageName.asString(), "$funcDeclare")
-
-                rootReducerBuilder.addCode(
-                    "   $sliceStateName = %M(state.$sliceStateName, action),\n",
-                    sliceReducerFunc
-                )
-
-                isNeed = true
-                // 构造函数添加参数
-                ctorBuilder.addParameter(sliceStateName, sliceStateType.toTypeName())
-                // 这段代码会为构造函数增加val
-                classBuilder.addProperty(
-                    PropertySpec.builder(sliceStateName, sliceStateType.toTypeName())
-                        .initializer(sliceStateName)
-                        .build()
-                )
+//                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
+//                logger.warn("函数参数类型 ====== $sliceStateType")
+//                logger.warn("函数名 ====== $funcDeclare")
+//                logger.warn("函数所在包名 ====== ${funcDeclare.packageName.asString()}")
+                addSliceInfo(funcDeclare, sliceStateName, sliceStateType)
             }
         if (!hadRun && isNeed) {
             // 遍历参数属性完毕
@@ -96,4 +123,6 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         }
         return symbols.toList()
     }
+
+
 }

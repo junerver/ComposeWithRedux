@@ -1,9 +1,7 @@
 package com.example.composewithredux.redux
 
-import AppState
 import org.reduxkotlin.createThreadSafeStore
 import org.reduxkotlin.reducerForActionType
-import rootReducer
 import xyz.junerver.redux_kotlin.annotation.SliceReducer
 
 /**
@@ -34,13 +32,28 @@ val otherReducer = reducerForActionType<String?, NameAction> { _, action ->
     }
 }
 
+@SliceReducer("areas2")
+val area2Reducer = reducerForActionType<List<Area>, Any> { state, action ->
+    when (action) {
+        is Action.AddArea -> {
+            state + action.area
+        }
+        is Action.DelArea -> {
+            state.filter {
+                it.id != action.id
+            }
+        }
+        else -> state
+    }
+}
+
 @SliceReducer(name = "name")
-fun nameReducer(state: String?, action: Any):String? {
-   return  when (action) {
+fun nameReducer(state: String?, action: Any): String? {
+    return when (action) {
         is NameAction.Rename -> action.name
         is NameAction.ClearName -> null
-       else -> state
-   }
+        else -> state
+    }
 }
 
 @SliceReducer(name = "flag")
