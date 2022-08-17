@@ -1,5 +1,6 @@
 package com.example.composewithredux
 
+import AppState
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.composewithredux.redux.*
-import com.example.composewithredux.redux.State
 import xyz.junerver.compose_redux.StoreProvider
 import xyz.junerver.compose_redux.rememberDispatcher
 import xyz.junerver.compose_redux.selectState
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ShowName() {
-    val name by selectState<State, String?> { name }
+    val name by selectState<AppState, String?> { name }
     Text(text = "show redux: $name!")
 }
 
@@ -69,7 +69,7 @@ fun ChangeName() {
 
 @Composable
 fun AreaList() {
-    val areas by selectState<State, List<Area>> { areas }
+    val areas by selectState<AppState, List<Area>> { areas }
     var input by remember {
         mutableStateOf("")
     }
@@ -105,7 +105,7 @@ fun AreaList() {
 
 @Composable
 fun Counter() {
-    val areas by selectState<State, List<Area>> { areas }
+    val areas by selectState<AppState, List<Area>> { areas }
     Text(text = "areas : ${areas.size}")
 }
 
