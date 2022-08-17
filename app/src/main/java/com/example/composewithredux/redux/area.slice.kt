@@ -1,7 +1,6 @@
 package com.example.composewithredux.redux
 
-import org.reduxkotlin.reducerForActionType
-import xyz.junerver.redux_kotlin.annotation.RegisterReducer
+import xyz.junerver.redux_kotlin.annotation.SliceReducer
 
 /**
  * Description:
@@ -10,7 +9,7 @@ import xyz.junerver.redux_kotlin.annotation.RegisterReducer
  * Email: junerver@gmail.com
  * Version: v1.0
  */
-@RegisterReducer("areas")
+@SliceReducer("areas")
 fun areaReducer(state: List<Area>, action: Any): List<Area> {
     return when (action) {
         is Action.AddArea -> {

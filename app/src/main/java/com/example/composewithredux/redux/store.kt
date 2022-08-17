@@ -1,11 +1,10 @@
 package com.example.composewithredux.redux
 
 import AppState
-import org.reduxkotlin.Reducer
 import org.reduxkotlin.createThreadSafeStore
 import org.reduxkotlin.reducerForActionType
 import rootReducer
-import xyz.junerver.redux_kotlin.annotation.RegisterReducer
+import xyz.junerver.redux_kotlin.annotation.SliceReducer
 
 /**
  * Description:
@@ -27,7 +26,7 @@ sealed interface NameAction {
 }
 
 
-@RegisterReducer(name = "other")
+@SliceReducer(name = "other")
 val otherReducer = reducerForActionType<String?, NameAction> { _, action ->
     when (action) {
         is NameAction.Rename -> action.name
@@ -35,7 +34,7 @@ val otherReducer = reducerForActionType<String?, NameAction> { _, action ->
     }
 }
 
-@RegisterReducer(name = "name")
+@SliceReducer(name = "name")
 fun nameReducer(state: String?, action: Any):String? {
    return  when (action) {
         is NameAction.Rename -> action.name
@@ -44,7 +43,7 @@ fun nameReducer(state: String?, action: Any):String? {
    }
 }
 
-@RegisterReducer(name = "flag")
+@SliceReducer(name = "flag")
 fun flagReducer(state: Boolean, action: Any): Boolean {
     return when (action) {
         is NameAction.Rename -> true
