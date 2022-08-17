@@ -57,6 +57,15 @@ fun nameReducer(state: String?, action: Any):String? {
    }
 }
 
+@RegisterReducer(name = "flag")
+fun flagReducer(state:Boolean, action: Any):Boolean {
+    return when (action) {
+        is NameAction.Rename -> true
+        is NameAction.ClearName -> false
+        else -> state
+    }
+}
+
 /**
  * 用于合并各个分割的reducer函数
  */

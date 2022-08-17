@@ -6,7 +6,6 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import xyz.junerver.redux_kotlin.annotation.RegisterReducer
@@ -23,6 +22,7 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     private val logger = environment.logger
     // 避免二次执行
     var hadRun = false
+    // 避免在不需要创建文件的模块创建文件
     var isNeed = false
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(RegisterReducer::class.qualifiedName!!)
@@ -49,26 +49,24 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             .toList()
             .forEach {
                 // 拿到被注解目标的注解一个队列
-                val annotations = it.annotations
                 // 拿到我们自定义的注解获取到注解的参数，由于只有一个参数直接拿0
-                val property = annotations.filter { ann ->
+                val property = it.annotations.filter { ann ->
                     ann.shortName.asString() == RegisterReducer::class.simpleName
                 }.last().arguments[0]
                 // 拿到注解申明的字段名称
-                val propertyName = property.value.toString()
+                val sliceStateName = property.value.toString()
                 // 从函数中获取参数1，然后获得其类型
-                val funcParam: KSValueParameter = it.parameters[0]
-                val funcParamType: KSType = funcParam.type.resolve()
-                logger.warn("注解参数=========== ${property.name!!.asString()} : $propertyName ")
-                logger.warn("函数参数类型 ====== ${funcParamType}")
+                val sliceStateType: KSType = it.parameters[0].type.resolve()
+                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
+                logger.warn("函数参数类型 ====== $sliceStateType")
 
                 isNeed = true
                 // 构造函数添加参数
-                ctorBuilder.addParameter(propertyName, funcParamType.toTypeName())
+                ctorBuilder.addParameter(sliceStateName, sliceStateType.toTypeName())
                 // 这段代码会为构造函数增加val
                 classBuilder.addProperty(
-                    PropertySpec.builder(propertyName, funcParamType.toTypeName())
-                        .initializer(propertyName)
+                    PropertySpec.builder(sliceStateName, sliceStateType.toTypeName())
+                        .initializer(sliceStateName)
                         .build()
                 )
             }
@@ -79,7 +77,6 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             fileBuilder.build().writeTo(codeGenerator, false)
             hadRun = true
         }
-//        logger.error("符号总数 ====== ${symbols.toList().size}")
         return symbols.toList()
     }
 }
