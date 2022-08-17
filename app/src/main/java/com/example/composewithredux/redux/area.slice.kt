@@ -10,7 +10,7 @@ import xyz.junerver.redux_kotlin.annotation.RegisterReducer
  * Email: junerver@gmail.com
  * Version: v1.0
  */
-@RegisterReducer(name = "areas")
+@RegisterReducer("areas")
 fun areaReducer(state: List<Area>, action: Any): List<Area> {
     return when (action) {
         is Action.AddArea -> {
