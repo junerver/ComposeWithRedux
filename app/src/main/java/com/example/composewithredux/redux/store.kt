@@ -1,5 +1,6 @@
 package com.example.composewithredux.redux
 
+import AppState
 import org.reduxkotlin.Reducer
 import org.reduxkotlin.createThreadSafeStore
 import org.reduxkotlin.reducerForActionType
@@ -40,13 +41,13 @@ sealed interface NameAction {
 //    }
 //}
 
-//@RegisterReducer(name = "name")
-//val nameReducer = reducerForActionType<String?, NameAction> { _, action ->
-//    when (action) {
-//        is NameAction.Rename -> action.name
-//        is NameAction.ClearName -> null
-//    }
-//}
+@RegisterReducer(name = "other")
+val otherReducer = reducerForActionType<String?, NameAction> { _, action ->
+    when (action) {
+        is NameAction.Rename -> action.name
+        is NameAction.ClearName -> null
+    }
+}
 
 @RegisterReducer(name = "name")
 fun nameReducer(state: String?, action: Any):String? {
@@ -58,7 +59,7 @@ fun nameReducer(state: String?, action: Any):String? {
 }
 
 @RegisterReducer(name = "flag")
-fun flagReducer(state:Boolean, action: Any):Boolean {
+fun flagReducer(state: Boolean, action: Any): Boolean {
     return when (action) {
         is NameAction.Rename -> true
         is NameAction.ClearName -> false
@@ -69,24 +70,25 @@ fun flagReducer(state:Boolean, action: Any):Boolean {
 /**
  * 用于合并各个分割的reducer函数
  */
-val rootReducer: Reducer<State> = { state: State, action: Any ->
-    State(
-        name = nameReducer(state.name, action),
-        areas = areaReducer(state.areas, action)
-    )
-}
-
+//val rootReducer: Reducer<State> = { state: State, action: Any ->
+//    State(
+//        name = nameReducer(state.name, action),
+//        areas = areaReducer(state.areas, action)
+//    )
+//}
+//
 data class State(
     val name: String?,
     val areas: List<Area>
 )
 
-fun reducer(state: State, action: Any) = State(
+fun reducer(state: AppState, action: Any) = AppState(
     name = nameReducer(state.name, action),
-    areas = areaReducer(state.areas, action as Action)
+    areas = areaReducer(state.areas, action),
+    flag = flagReducer(state.flag, action)
 )
 
-val store = createThreadSafeStore(::reducer , State(null, emptyList()))
+val store = createThreadSafeStore(::reducer, AppState(emptyList(), null, false))
 
 
 data class Area(
