@@ -2,6 +2,7 @@ package com.example.composewithredux.redux
 
 import org.reduxkotlin.Reducer
 import org.reduxkotlin.createThreadSafeStore
+import org.reduxkotlin.reducerForActionType
 import xyz.junerver.redux_kotlin.annotation.RegisterReducer
 
 /**
@@ -71,7 +72,6 @@ data class State(
     val areas: List<Area>
 )
 
-@RegisterReducer(name = "reducer")
 fun reducer(state: State, action: Any) = State(
     name = nameReducer(state.name, action),
     areas = areaReducer(state.areas, action as Action)
