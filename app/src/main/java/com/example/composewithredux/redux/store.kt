@@ -66,9 +66,17 @@ fun flagReducer(state: Boolean, action: Any): Boolean {
 }
 
 
-val store = createThreadSafeStore(::rootReducer, AppState(emptyList(), null, false))
+val store = createThreadSafeStore(::rootReducer2, AppState2(
+    areas = listOf(
+        Area(id = "1", name = "北京"),
+        Area(id = "2", name = "上海"),
+        Area(id = "3", name = "广州")
+    ),
+    name = "junerver",
+    flag = false
+))
 
 data class Area(
     val id: String,
-    val areaName: String,
+    val name: String,
 )

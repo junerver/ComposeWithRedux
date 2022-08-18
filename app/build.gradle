@@ -55,6 +55,12 @@ android {
     }
 }
 
+ksp {
+    // Passing an argument to the symbol processor.
+    // Change value to "true" in order to apply the argument.
+    arg("target", "com.example.composewithredux.redux")
+}
+
 dependencies {
     implementation project(':compose-redux')
     implementation project(':redux-kotlin-annotation')

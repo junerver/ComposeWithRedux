@@ -20,6 +20,7 @@ import xyz.junerver.redux_kotlin.annotation.SliceReducer
 class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
     private val codeGenerator = environment.codeGenerator
     private val logger = environment.logger
+    private val options = environment.options
 
     // 避免二次执行
     var hadRun = false
@@ -29,13 +30,14 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(SliceReducer::class.qualifiedName!!)
             .filter { it.validate() }
-
-        val fileBuilder = FileSpec.builder("", "ReduxKotlinRoot")
+        val ret = symbols.filter { !it.validate() }.toList()
+        val packageName = options["target"] ?: ""
+        val fileBuilder = FileSpec.builder(packageName, "ReduxKotlinRoot")
         // data class 作为AppState
         val classBuilder = TypeSpec.classBuilder("AppState").addModifiers(KModifier.DATA)
         val ctorBuilder = FunSpec.constructorBuilder()
         // 添加 rootReducer 函数
-        val appStateClass = ClassName("", "AppState")
+        val appStateClass = ClassName(packageName, "AppState")
         val rootReducerBuilder = FunSpec.builder("rootReducer")
             .addParameter("state", appStateClass)
             .addParameter("action", Any::class)
@@ -65,48 +67,25 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             )
         }
 
-        // val a = {a,b -> a+b}  KSPropertyDeclaration
-        symbols.filter { it is KSPropertyDeclaration && it.validate() }
-            .map { it as KSPropertyDeclaration }
-            .forEach {
-                isNeed = true
-                val property = it.annotations.filter { ann ->
-                    ann.shortName.asString() == SliceReducer::class.simpleName
-                }.last().arguments[0]
-                val sliceStateName = property.value.toString()
-                val sliceStateType: KSType = it.type.resolve().arguments[0].type!!.resolve()
-
-                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
-                logger.warn("函数名 ====== $it  ${it is KSFunctionDeclaration}")
-                logger.warn("类型解析 ====== ${it.type.resolve()}")
-                logger.warn("是否函数类型 ====== ${it.type.resolve().isFunctionType}")
-                logger.warn("函数的参数 ====== ${it.type.resolve().arguments[0].type?.resolve()}")
-
-                addSliceInfo(it, sliceStateName, sliceStateType)
-            }
-
-        symbols.filter { it is KSFunctionDeclaration && it.validate() }
-            .map { it as KSFunctionDeclaration }
-            .filter {
-                it.returnType.toString() == it.parameters[0].type.toString()
-            }
+        symbols.filter { it is KSFunctionDeclaration || it is KSPropertyDeclaration }
+            .filter { it.validate() }
+            .map { it as KSDeclaration }
             .toList()
             .forEach { funcDeclare ->
                 isNeed = true
                 // 拿到被注解目标的注解一个队列
                 // 拿到我们自定义的注解获取到注解的参数，由于只有一个参数直接拿0
-                val property = funcDeclare.annotations.filter { ann ->
+                val annArgument = funcDeclare.annotations.filter { ann ->
                     ann.shortName.asString() == SliceReducer::class.simpleName
                 }.last().arguments[0]
                 // 拿到注解申明的字段名称
-                val sliceStateName = property.value.toString()
+                val sliceStateName = annArgument.value.toString()
                 // 从函数中获取参数1，然后获得其类型
-                val sliceStateType: KSType = funcDeclare.parameters[0].type.resolve()
-
-//                logger.warn("注解参数=========== ${property.name!!.asString()} : $sliceStateName ")
-//                logger.warn("函数参数类型 ====== $sliceStateType")
-//                logger.warn("函数名 ====== $funcDeclare")
-//                logger.warn("函数所在包名 ====== ${funcDeclare.packageName.asString()}")
+                val sliceStateType: KSType = if (funcDeclare is KSFunctionDeclaration) {
+                    funcDeclare.parameters[0].type.resolve()
+                } else {
+                    (funcDeclare as KSPropertyDeclaration).type.resolve().arguments[0].type!!.resolve()
+                }
                 addSliceInfo(funcDeclare, sliceStateName, sliceStateType)
             }
         if (!hadRun && isNeed) {
@@ -121,7 +100,7 @@ class ReducerProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             fileBuilder.build().writeTo(codeGenerator, false)
             hadRun = true
         }
-        return symbols.toList()
+        return ret
     }
 
 

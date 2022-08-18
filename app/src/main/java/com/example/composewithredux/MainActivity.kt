@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ShowName() {
-    val name by selectState<AppState, String?> { name }
+    val name by selectState<AppState2, String?> { name }
     Text(text = "show redux: $name!")
 }
 
@@ -68,7 +68,7 @@ fun ChangeName() {
 
 @Composable
 fun AreaList() {
-    val areas by selectState<AppState, List<Area>> { areas }
+    val areas by selectState<AppState2, List<Area>> { areas }
     var input by remember {
         mutableStateOf("")
     }
@@ -76,7 +76,7 @@ fun AreaList() {
     Column {
         if (areas.isNotEmpty()) {
             for (area in areas) {
-                Text(text = area.areaName)
+                Text(text = area.name)
             }
         }
         OutlinedTextField(value = input, onValueChange = {
@@ -104,7 +104,7 @@ fun AreaList() {
 
 @Composable
 fun Counter() {
-    val areas by selectState<AppState, List<Area>> { areas }
+    val areas by selectState<AppState2, List<Area>> { areas }
     Text(text = "areas : ${areas.size}")
 }
 
