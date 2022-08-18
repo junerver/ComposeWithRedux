@@ -12,11 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.composewithredux.redux.*
+import com.example.composewithredux.ui.theme.ComposeWithReduxTheme
 import xyz.junerver.compose_redux.StoreProvider
 import xyz.junerver.compose_redux.rememberDispatcher
 import xyz.junerver.compose_redux.selectState
-import com.example.composewithredux.ui.theme.ComposeWithReduxTheme
-import java.util.UUID
+import java.util.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ShowName() {
-    val name by selectState<AppState2, String?> { name }
+    val name by selectState<AppState, String?> { name }
     Text(text = "show redux: $name!")
 }
 
@@ -55,12 +55,8 @@ fun ChangeName() {
     }
     val dispatch = rememberDispatcher()
     Column {
-        OutlinedTextField(value = input, onValueChange = {
-            input = it
-        })
-        Button(onClick = {
-            dispatch(NameAction.Rename(input))
-        }) {
+        OutlinedTextField(value = input, onValueChange = { input = it })
+        Button(onClick = { dispatch(NameAction.Rename(input)) }) {
             Text(text = "save")
         }
     }
@@ -68,7 +64,7 @@ fun ChangeName() {
 
 @Composable
 fun AreaList() {
-    val areas by selectState<AppState2, List<Area>> { areas }
+    val areas by selectState<AppState, List<Area>> { areas }
     var input by remember {
         mutableStateOf("")
     }
@@ -84,14 +80,14 @@ fun AreaList() {
         })
         Row {
             Button(onClick = {
-                dispatch(Action.AddArea(Area(UUID.randomUUID().toString(), input)))
+                dispatch(AreaAction.AddArea(Area(UUID.randomUUID().toString(), input)))
             }) {
                 Text(text = "add")
             }
             if (areas.isNotEmpty()) {
                 Button(
                     onClick = {
-                        dispatch(Action.DelArea(areas.first().id))
+                        dispatch(AreaAction.DelArea(areas.first().id))
                     },
                     modifier = Modifier.padding(start = 20.dp)
                 ) {
@@ -104,7 +100,7 @@ fun AreaList() {
 
 @Composable
 fun Counter() {
-    val areas by selectState<AppState2, List<Area>> { areas }
+    val areas by selectState<AppState, List<Area>> { areas }
     Text(text = "areas : ${areas.size}")
 }
 
