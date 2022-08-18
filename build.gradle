@@ -2,9 +2,6 @@ buildscript {
     ext {
         compose_ui_version = '1.2.0-beta01'
     }
-    dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21'
-    }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     id 'com.android.application' version '7.4.0-alpha09' apply false
@@ -13,15 +10,3 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.21' apply false
     id 'com.google.devtools.ksp' version '1.6.21-1.0.6' apply false
 }
-// 禁用编译器版本兼容
-//allprojects {
-//    // Suppress Compose Kotlin compiler compatibility warning
-//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-//        kotlinOptions {
-//            freeCompilerArgs += [
-//                    "-P",
-//                    "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
-//            ]
-//        }
-//    }
-//}

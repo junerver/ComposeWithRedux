@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
     id 'com.google.devtools.ksp'
 }
 
@@ -56,8 +55,6 @@ android {
 }
 
 ksp {
-    // Passing an argument to the symbol processor.
-    // Change value to "true" in order to apply the argument.
     arg("target", "com.example.composewithredux.redux")
 }
 
