@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composewithredux.redux.*
 import com.example.composewithredux.ui.theme.ComposeWithReduxTheme
+import org.reduxkotlin.Store
 import xyz.junerver.compose_redux.StoreProvider
 import xyz.junerver.compose_redux.rememberDispatcher
 import xyz.junerver.compose_redux.selectState
@@ -27,21 +28,56 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeWithReduxTheme {
                 // A surface container using the 'background' color from the theme
-                StoreProvider(store = store) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colors.background
-                    ) {
-                        Column {
-                            ShowName()
-                            ChangeName()
-                            AreaList()
-                            Counter()
+                NameProvider {
+                    StoreProvider(store = store) {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colors.background
+                        ) {
+                            Column {
+                                ShowName()
+                                ChangeName()
+                                AreaList()
+                                Counter()
+
+                                TestNameFromProvider()
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+class Name(name: String) {
+    // 必须将他改造成状态才能在子组件种修改
+    var name by mutableStateOf(name)
+    fun changeName(newName: String) {
+        this.name = newName
+    }
+}
+
+val LocalName:ProvidableCompositionLocal<Name> = compositionLocalOf { error("undefined") }
+
+@Composable
+fun NameProvider(content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalName provides Name("张三")) {
+        content()
+    }
+}
+
+@Composable
+fun TestNameFromProvider() {
+    val nameObj = LocalName.current
+    Column {
+        // 要想它能变化的前提就是，它必须是一个状态
+        Text(text = "name from Provider : ${nameObj.name}")
+    }
+    Button(onClick = {
+        nameObj.changeName("李四")
+    }) {
+        Text(text = "change Provider")
     }
 }
 
@@ -53,7 +89,7 @@ fun ShowName() {
 
 @Preview(showBackground = true)
 @Composable
-fun MyText(text:String = "xzxcasasdasdasddasdasdzxc"){
+fun MyText(text: String = "xzxcasasdasdasddasdasdzxc") {
     Text(
         text = "show redux: $text!",
         modifier = Modifier
@@ -71,9 +107,14 @@ fun ChangeName() {
         mutableStateOf("")
     }
     val dispatch = rememberDispatcher()
+    // 从CompositionLocal 种获取的顶层数据
+    val nameObj = LocalName.current
     Column {
         OutlinedTextField(value = input, onValueChange = { input = it })
-        Button(onClick = { dispatch(NameAction.Rename(input)) }) {
+        Button(onClick = {
+            dispatch(NameAction.Rename(input))
+            nameObj.changeName(input)
+        }) {
             Text(text = "save")
         }
     }
